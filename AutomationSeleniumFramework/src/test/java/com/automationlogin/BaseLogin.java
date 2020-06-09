@@ -3,61 +3,50 @@ package com.automationlogin;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.openqa.selenium.By;
-import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeDriverService;
-import org.openqa.selenium.support.ui.ExpectedConditions;
-import org.openqa.selenium.support.ui.WebDriverWait;
+import org.openqa.selenium.support.ui.Wait;
 
-	public class BaseLogin {
+import com.config.BaseConfig;
+import com.util.Highlighter;
 
-		public static void main(String[] args) throws Throwable {
+public class BaseLogin {
 
-			System.setProperty("webdriver.chrome.driver", "./Driver/chromedriver.exe");
-			System.setProperty(ChromeDriverService.CHROME_DRIVER_SILENT_OUTPUT_PROPERTY, "true");
-			Logger.getLogger("org.openqa.selenium").setLevel(Level.OFF);
-			
-			
-			WebDriver driver = new ChromeDriver();// upcasting polymorphism
-			driver.manage().window().maximize();
-			//driver.manage().timeouts().implicitlyWait(5, TimeUnit.SECONDS);//implicit wait ===> HTML DOM page(slow down automation)
-			driver.get("http://automationpractice.com/index.php");
-			System.out.println(driver.getTitle());//Home page
+public static void main(String[] args) throws Throwable {
 		
-			WebElement signBtn = driver.findElement(By.xpath("// *[@class='login']"));
-			
-			JavascriptExecutor js = (JavascriptExecutor) driver; // type casting polymorphism
-			js.executeScript("arguments[0].setAttribute('style', 'background: blue; border: 2px solid red;');", signBtn);
-			
-			signBtn.click();//click
-			
-			//Thread.sleep(5000);//sleep= unconditional==bad practice
+		System.setProperty("webdriver.chrome.driver", "./Driver/chromedriver.exe");
+		System.setProperty(ChromeDriverService.CHROME_DRIVER_SILENT_OUTPUT_PROPERTY, "true");
+		Logger.getLogger("org.openqa.selenium").setLevel(Level.OFF);
+		WebDriver driver = new ChromeDriver();//upcasting
+		
+		driver.manage().window().maximize();//maximum or full size
+		driver.manage().deleteAllCookies();
+		driver.get(BaseConfig.getconfig("URL"));
+		
+		LoginPage login =new LoginPage(driver);
+		System.out.println(driver.getTitle());
+		//new Highlighter().getcolor(driver, login.getLogin());
+		login.getLogin().click();// click
+		System.out.println(driver.getCurrentUrl());
+		System.out.println(driver.getTitle());
 
-			System.out.println(driver.getTitle());//Login page
-			
-			WebElement email = driver.findElement(By.xpath("//*[@id='email']"));
-			
-			//Explicit wait or webdriver wait
-			WebDriverWait obj = new WebDriverWait(driver, 30);
-			obj.until(ExpectedConditions.numberOfElementsToBeMoreThan(By.xpath("//*[@id='email']"), 0));
-			
-			js.executeScript("arguments[0].setAttribute('style', 'background: blue; border: 2px solid red;');", email);
-			email.sendKeys("sarowerny@gmail.com");
-			
-			
-			WebElement password = driver.findElement(By.xpath("//*[@id='passwd']"));
-			js.executeScript("arguments[0].setAttribute('style', 'background: blue; border: 2px solid red;');", password);
-			password.sendKeys("student");
-			Thread.sleep(3000);
-			//password.submit();//click
-			//*[@id='SubmitLogin']
-			WebElement loginBtn = driver.findElement(By.xpath("//*[@id='SubmitLogin']"));
-			loginBtn.click();
-			
-			System.out.println(driver.getTitle());// after Login done 
-		}
+		Wait.getExplicitWaitClicable(driver, login.getEmail());
+		new Highlighter().getcolor(driver, login.getEmail(), "yellow");
+		login.getEmail().sendKeys(BaseConfig.getconfig("email"));
+		
+		
+		new Highlighter().getcolor(driver, login.getPass(),"black");
+		login.getPass().sendKeys(BaseConfig.getconfig("pass"));
+		Thread.sleep(3000);
 
+		login.getSubmit().click();
+
+		System.out.println(driver.getTitle());
+		
+		driver.quit();//= all browser tab + Chrome driver
+		
 	}
+
+}
+
